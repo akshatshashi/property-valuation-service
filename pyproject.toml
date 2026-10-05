@@ -1,0 +1,18 @@
+[project]
+name = "property-valuation-service"
+version = "1.0.0"
+description = "Automated property valuation + suburb price forecasting service with data-quality gating, MLflow lifecycle and drift monitoring."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning", "ignore::UserWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["B008"]

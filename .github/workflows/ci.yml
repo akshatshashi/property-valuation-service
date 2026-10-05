@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-train-gate:
+    runs-on: ubuntu-latest
+    env:
+      MLFLOW_DISABLE_AGENT_HINT: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test
+        run: pytest -q
+
+      # Continuous-delivery gate: train on the committed fixture and fail the
+      # build if the best model does not beat the suburb-median baseline on PPE10.
+      - name: Train + baseline gate
+        run: |
+          python scripts/train.py --data tests/fixtures/sample_sales.csv --seed 42 \
+            --fail-if-not-better-than-baseline
+          cat reports/training_summary.json
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-reports
+          path: |
+            reports/leaderboard.csv
+            reports/forecast_backtest.csv
+            reports/training_summary.json
+            DATA_QUALITY_REPORT.md
+
+  docker:
+    needs: test-train-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t property-valuation:${{ github.sha }} .
+      - name: Smoke test /health and /value
+        run: |
+          docker run -d -p 8000:8000 --name pvs property-valuation:${{ github.sha }}
+          for i in $(seq 1 30); do curl -sf localhost:8000/health && break; sleep 2; done
+          curl -sf -X POST localhost:8000/value -H 'content-type: application/json' \
+            -d '{"suburb":"Richmond","postcode":"3121","property_type":"house","bedrooms":3,"bathrooms":2}'

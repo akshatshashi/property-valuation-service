@@ -1,0 +1,29 @@
+# data & generated artifacts
+data/
+mlruns/
+reports/
+logs/
+*.db
+*.parquet
+
+# personal notes — never published
+README.md
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# terraform
+infra/.terraform/
+infra/*.tfstate*
+infra/.terraform.lock.hcl
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/

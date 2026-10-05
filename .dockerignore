@@ -1,0 +1,14 @@
+.git
+.github
+data/
+mlruns/
+reports/
+logs/
+notebooks/
+infra/
+**/__pycache__
+.pytest_cache
+.ruff_cache
+README.md
+*.md
+!MODEL_CARD.md
